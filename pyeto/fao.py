@@ -8,7 +8,7 @@ meteorological data.
 :license: BSD 3-Clause, see LICENSE.txt for more details.
 """
 
-import math
+import numpy as np
 
 from ._check import (
     check_day_hours as _check_day_hours,
@@ -39,7 +39,7 @@ def atm_pressure(altitude):
     :rtype: float
     """
     tmp = (293.0 - (0.0065 * altitude)) / 293.0
-    return math.pow(tmp, 5.26) * 101.3
+    return np.power(tmp, 5.26) * 101.3
 
 
 def avp_from_tmin(tmin):
@@ -61,7 +61,7 @@ def avp_from_tmin(tmin):
     :return: Actual vapour pressure [kPa]
     :rtype: float
     """
-    return 0.611 * math.exp((17.27 * tmin) / (tmin + 237.3))
+    return 0.611 * np.exp((17.27 * tmin) / (tmin + 237.3))
 
 
 def avp_from_rhmin_rhmax(svp_tmin, svp_tmax, rh_min, rh_max):
@@ -135,7 +135,7 @@ def avp_from_tdew(tdew):
     :return: Actual vapour pressure [kPa]
     :rtype: float
     """
-    return 0.6108 * math.exp((17.27 * tdew) / (tdew + 237.3))
+    return 0.6108 * np.exp((17.27 * tdew) / (tdew + 237.3))
 
 
 def avp_from_twet_tdry(twet, tdry, svp_twet, psy_const):
@@ -207,7 +207,7 @@ def daylight_hours(sha):
     :rtype: float
     """
     _check_sunset_hour_angle_rad(sha)
-    return (24.0 / math.pi) * sha
+    return (24.0 / np.pi) * sha
 
 
 def delta_svp(t):
@@ -223,8 +223,8 @@ def delta_svp(t):
     :return: Saturation vapour pressure [kPa degC-1]
     :rtype: float
     """
-    tmp = 4098 * (0.6108 * math.exp((17.27 * t) / (t + 237.3)))
-    return tmp / math.pow((t + 237.3), 2)
+    tmp = 4098 * (0.6108 * np.exp((17.27 * t) / (t + 237.3)))
+    return tmp / np.power((t + 237.3), 2)
 
 
 def energy2evap(energy):
@@ -273,9 +273,9 @@ def et_rad(latitude, sol_dec, sha, ird):
     _check_sol_dec_rad(sol_dec)
     _check_sunset_hour_angle_rad(sha)
 
-    tmp1 = (24.0 * 60.0) / math.pi
-    tmp2 = sha * math.sin(latitude) * math.sin(sol_dec)
-    tmp3 = math.cos(latitude) * math.cos(sol_dec) * math.sin(sha)
+    tmp1 = (24.0 * 60.0) / np.pi
+    tmp2 = sha * np.sin(latitude) * np.sin(sol_dec)
+    tmp3 = np.cos(latitude) * np.cos(sol_dec) * np.sin(sha)
     return tmp1 * SOLAR_CONSTANT * ird * (tmp2 + tmp3)
 
 
@@ -354,7 +354,7 @@ def inv_rel_dist_earth_sun(day_of_year):
     :rtype: float
     """
     _check_doy(day_of_year)
-    return 1 + (0.033 * math.cos((2.0 * math.pi / 365.0) * day_of_year))
+    return 1 + (0.033 * np.cos((2.0 * np.pi / 365.0) * day_of_year))
 
 
 def mean_svp(tmin, tmax):
@@ -472,8 +472,8 @@ def net_out_lw_rad(tmin, tmax, sol_rad, cs_rad, avp):
     :rtype: float
     """
     tmp1 = (STEFAN_BOLTZMANN_CONSTANT *
-        ((math.pow(tmax, 4) + math.pow(tmin, 4)) / 2))
-    tmp2 = (0.34 - (0.14 * math.sqrt(avp)))
+        ((np.power(tmax, 4) + np.power(tmin, 4)) / 2))
+    tmp2 = (0.34 - (0.14 * np.sqrt(avp)))
     tmp3 = 1.35 * (sol_rad / cs_rad) - 0.35
     return tmp1 * tmp2 * tmp3
 
@@ -578,7 +578,7 @@ def sol_dec(day_of_year):
     :rtype: float
     """
     _check_doy(day_of_year)
-    return 0.409 * math.sin(((2.0 * math.pi / 365.0) * day_of_year - 1.39))
+    return 0.409 * np.sin(((2.0 * np.pi / 365.0) * day_of_year - 1.39))
 
 
 def sol_rad_from_sun_hours(daylight_hours, sunshine_hours, et_rad):
@@ -650,7 +650,7 @@ def sol_rad_from_t(et_rad, cs_rad, tmin, tmax, coastal):
     else:
         adj = 0.16
 
-    sol_rad = adj * math.sqrt(tmax - tmin) * et_rad
+    sol_rad = adj * np.sqrt(tmax - tmin) * et_rad
 
     # The solar radiation value is constrained by the clear sky radiation
     return min(sol_rad, cs_rad)
@@ -697,13 +697,13 @@ def sunset_hour_angle(latitude, sol_dec):
     _check_latitude_rad(latitude)
     _check_sol_dec_rad(sol_dec)
 
-    cos_sha = -math.tan(latitude) * math.tan(sol_dec)
+    cos_sha = -np.tan(latitude) * np.tan(sol_dec)
     # If tmp is >= 1 there is no sunset, i.e. 24 hours of daylight
     # If tmp is <= 1 there is no sunrise, i.e. 24 hours of darkness
     # See http://www.itacanet.org/the-sun-as-a-source-of-energy/
     # part-3-calculating-solar-angles/
     # Domain of acos is -1 <= x <= 1 radians (this is not mentioned in FAO-56!)
-    return math.acos(min(max(cos_sha, -1.0), 1.0))
+    return np.acos(min(max(cos_sha, -1.0), 1.0))
 
 
 def svp_from_t(t):
@@ -716,7 +716,7 @@ def svp_from_t(t):
     :return: Saturation vapour pressure [kPa]
     :rtype: float
     """
-    return 0.6108 * math.exp((17.27 * t) / (t + 237.3))
+    return 0.6108 * np.exp((17.27 * t) / (t + 237.3))
 
 
 def wind_speed_2m(ws, z):
@@ -732,4 +732,4 @@ def wind_speed_2m(ws, z):
     :return: Wind speed at 2 m above the surface [m s-1]
     :rtype: float
     """
-    return ws * (4.87 / math.log((67.8 * z) - 5.42))
+    return ws * (4.87 / np.log((67.8 * z) - 5.42))
